@@ -1,0 +1,166 @@
+-- Удаляем базу данных "Library"
+DROP DATABASE IF EXISTS library;
+
+-- Создание базу данных "library"
+CREATE DATABASE library;
+
+-- Подключение к базе данных "library"
+\c library;
+
+-- Создание таблицы "Language" (Язык)
+CREATE TABLE Language (
+    language_id SERIAL PRIMARY KEY,      -- Идентификатор языка (PK)
+    language_name VARCHAR(255) NOT NULL,  -- Название языка
+    language_short_name VARCHAR(255) NOT NULL -- Краткое название языка
+);
+COMMENT ON TABLE Language IS 'Таблица содержит данные о языках';
+COMMENT ON COLUMN Language.language_id IS 'Первичный ключ, уникальный идентификатор языка';
+COMMENT ON COLUMN Language.language_name IS 'Название языка';
+
+-- Заполним таблицу языков
+INSERT INTO Language (language_name, language_short_name) 
+VALUES
+    ('Английский (США)', 'en-US'),
+    ('Английский (Великобритания)', 'en-GB'),
+    ('Русский', 'ru-RU'),
+    ('Испанский (Испания)', 'es-ES'),
+    ('Испанский (Мексика)', 'es-MX'),
+    ('Немецкий', 'de-DE'),
+    ('Французский', 'fr-FR'),
+    ('Китайский (упрощённый)', 'zh-CN'),
+    ('Китайский (традиционный)', 'zh-TW'),
+    ('Японский', 'ja-JP'),
+    ('Итальянский', 'it-IT'),
+    ('Португальский (Бразилия)', 'pt-BR'),
+    ('Португальский (Португалия)', 'pt-PT'),
+    ('Арабский', 'ar-SA'),
+    ('Корейский', 'ko-KR'),
+    ('Индонезийский', 'id-ID'),
+    ('Турецкий', 'tr-TR'),
+    ('Голландский', 'nl-NL'),
+    ('Шведский', 'sv-SE'),
+    ('Польский', 'pl-PL');
+
+-- Создание таблицы "Publication" (Издание)
+CREATE TABLE Publication (
+    publication_id SERIAL PRIMARY KEY,       -- Идентификатор издания (PK)
+    publication_title VARCHAR(255) NOT NULL, -- Наименование издания
+    publication_author VARCHAR(255) NOT NULL, -- Автор
+    publication_publisher VARCHAR(255) NOT NULL, -- Издатель
+    publication_publication_date DATE NOT NULL, -- Дата издания
+    publication_publication_language INT NOT NULL REFERENCES Language(language_id) ON DELETE CASCADE, -- Внешний ключ на язык
+    publication_publication_pages INT NOT NULL, -- Количество страниц
+    publication_ISBN VARCHAR(255) NOT NULL -- ISBN    
+);
+COMMENT ON TABLE Publication IS 'Таблица содержит данные об изданиях';
+COMMENT ON COLUMN Publication.publication_id IS 'Первичный ключ, уникальный идентификатор издания';
+COMMENT ON COLUMN Publication.publication_title IS 'Название издания';
+COMMENT ON COLUMN Publication.publication_author IS 'Автор';
+COMMENT ON COLUMN Publication.publication_publisher IS 'Издательство';
+COMMENT ON COLUMN Publication.publication_publication_date IS 'Дата издания';
+COMMENT ON COLUMN Publication.publication_publication_language IS 'Язык издания';
+COMMENT ON COLUMN Publication.publication_publication_pages IS 'Количество страниц';
+COMMENT ON COLUMN Publication.publication_ISBN IS 'ISBN (международный стандартный книжный номер)';
+
+-- Создание таблицы "Reader" (Читатель)
+CREATE TABLE Reader (
+    reader_id SERIAL PRIMARY KEY,        -- Идентификатор читателя (PK)
+    reader_name VARCHAR(255) NOT NULL, -- Имя читателя
+    reader_surname VARCHAR(255) NOT NULL, -- Фамилия читателя
+    reader_middle_name VARCHAR(255) DEFAULT NULL  -- Отчество читателя
+);
+COMMENT ON TABLE Reader IS 'Таблица содержит данные о читателях';
+COMMENT ON COLUMN Reader.reader_id IS 'Первичный ключ, уникальный идентификатор читателя';
+COMMENT ON COLUMN Reader.reader_name IS 'Имя читателя';
+COMMENT ON COLUMN Reader.reader_surname IS 'Фамилия читателя';
+COMMENT ON COLUMN Reader.reader_middle_name IS 'Отчество читателя';
+
+-- Создание таблицы состояний книг
+CREATE TABLE BookCondition (
+    condition_id SERIAL PRIMARY KEY,          -- Идентификатор состояния (PK)
+    condition_name VARCHAR(255) NOT NULL,     -- Название состояния
+    condition_description VARCHAR(255) NOT NULL -- Описание состояния
+);
+COMMENT ON TABLE BookCondition IS 'Таблица содержит данные о состояниях книг';
+COMMENT ON COLUMN BookCondition.condition_id IS 'Первичный ключ, уникальный идентификатор состояния';
+COMMENT ON COLUMN BookCondition.condition_name IS 'Название состояния';
+COMMENT ON COLUMN BookCondition.condition_description IS 'Описание состояния';
+
+-- Заполним таблицу состояний книг
+INSERT INTO BookCondition (condition_name, condition_description)
+VALUES
+    ('Плохо', 'Книга находится в плохом состоянии, много пометок, страницы порваны'),
+    ('Неудовлетворительно', 'Книга находится в неудовлетворительном состоянии, есть пометки, но страницы целы'),
+    ('Удовлетворительно', 'Книга находится в удовлетворительном состоянии, есть небольшие пометки, но страницы целы'),
+    ('Хорошо', 'Книга находится в хорошем состоянии, имеет небольшие пометки, но страницы целы'),
+    ('Очень хорошо', 'Книга находится в отличном состоянии, имеет небольшие пометки, но страницы целы'),
+    ('Новый', 'Книга находится в новом состоянии, не имеет пометок, страницы целы'),
+    ('Очень новый', 'Книга находится в новом состоянии, не имеет пометок, страницы целы'),
+    ('Новый', 'Книга находится в новом состоянии, не имеет пометок, страницы целы'),
+    ('Очень новый', 'Книга находится в новом состоянии, не имеет пометок, страницы целы'),
+    ('Идеальное', 'Книга находится в идеальном состоянии, не имеет пометок, страницы целы');
+
+
+-- Создание таблицы "Copy" (Экземпляр издания)
+CREATE TABLE Copy (
+    copy_id SERIAL PRIMARY KEY,          -- Идентификатор экземпляра (PK)
+    copy_publication_id INT REFERENCES Publication(publication_id) ON DELETE CASCADE, -- Внешний ключ на издание (FK)
+    copy_wear_coefficient INT REFERENCES BookCondition(condition_id) ON DELETE CASCADE -- Внешний ключ на состояние (FK)
+);
+COMMENT ON TABLE Copy IS 'Таблица содержит данные о экземплярах изданий';
+COMMENT ON COLUMN Copy.copy_id IS 'Первичный ключ, уникальный идентификатор экземпляра';
+COMMENT ON COLUMN Copy.copy_publication_id IS 'Внешний ключ, ссылающийся на идентификатор издания';
+COMMENT ON COLUMN Copy.copy_wear_coefficient IS 'Внешний ключ, ссылается на идентификатор состояния';
+
+-- Создание таблицы "Loan" (Выдача)
+CREATE TABLE Loan (
+    loan_id SERIAL PRIMARY KEY,           -- Идентификатор выдачи (PK)
+    loan_copy_id INT REFERENCES Copy(copy_id) ON DELETE CASCADE, -- Внешний ключ на экземпляр (FK)
+    loan_reader_id INT REFERENCES Reader(reader_id) ON DELETE CASCADE, -- Внешний ключ на читателя (FK)
+    loan_date DATE NOT NULL,              -- Дата выдачи
+    loan_return_date_plan DATE NOT NULL,  -- Планируемая дата возврата
+    loan_return_date_actual DATE          -- Фактическая дата возврата
+);
+COMMENT ON TABLE Loan IS 'Таблица содержит данные о выдаче экземпляров читателям';
+COMMENT ON COLUMN Loan.loan_id IS 'Первичный ключ, уникальный идентификатор выдачи';
+COMMENT ON COLUMN Loan.loan_copy_id IS 'Внешний ключ, ссылающийся на идентификатор экземпляра';
+COMMENT ON COLUMN Loan.loan_reader_id IS 'Внешний ключ, ссылающийся на идентификатор читателя';
+COMMENT ON COLUMN Loan.loan_date IS 'Дата выдачи экземпляра';
+COMMENT ON COLUMN Loan.loan_return_date_plan IS 'Планируемая дата возврата экземпляра';
+COMMENT ON COLUMN Loan.loan_return_date_actual IS 'Фактическая дата возврата экземпляра';
+
+-- Добавим несколько записей в таблицу "Publication"
+INSERT INTO Publication (publication_title, publication_author, publication_publisher, publication_publication_date, publication_publication_language, publication_publication_pages, publication_ISBN)
+VALUES 
+('War and Peace', 'Leo Tolstoy', 'The Russian Messenger', '1869-01-01', 3, 1225, '978-3-16-148410-0'),
+('1984', 'George Orwell', 'Secker & Warburg', '1949-06-08', 1, 328, '978-0-452-28423-4'),
+('The Catcher in the Rye', 'J.D. Salinger', 'Little, Brown and Company', '1951-07-16', 1, 277, '978-0-316-76948-0'),
+('Don Quixote', 'Miguel de Cervantes', 'Francisco de Robles', '1605-01-01', 4, 1072, '978-1-56619-909-4'),
+('Les Misérables', 'Victor Hugo', 'A. Lacroix, Verboeckhoven & Cie.', '1862-04-03', 7, 1463, '978-0-7432-7352-4');
+
+-- Добавим несколько записей в таблицу "Reader"
+INSERT INTO Reader (reader_name, reader_surname, reader_middle_name)
+VALUES 
+('John', 'Doe', 'Michaelovich'),
+('Jane', 'Smith', 'Alexeevna'),
+('Petr', 'Ivanov', 'Sergeevich'),
+('Maria', 'Petrova', 'Vladimirovna'),
+('Carlos', 'Gomez', 'Martinez');
+
+-- Добавим несколько записей в таблицу "Copy", используя данные из таблицы "Publication" и "BookCondition"
+INSERT INTO Copy (copy_publication_id, copy_wear_coefficient)
+VALUES
+(1, 6),  -- War and Peace (новый)
+(2, 3),  -- 1984 (удовлетворительно)
+(3, 5),  -- The Catcher in the Rye (очень хорошо)
+(4, 4),  -- Don Quixote (хорошо)
+(5, 7);  -- Les Misérables (очень новый)
+
+-- Добавим несколько записей в таблицу "Loan", используя данные из таблиц "Copy" и "Reader"
+INSERT INTO Loan (loan_copy_id, loan_reader_id, loan_date, loan_return_date_plan, loan_return_date_actual)
+VALUES
+(1, 1, '2023-01-10', '2023-02-10', '2023-02-05'),  -- John Doe взял War and Peace
+(2, 2, '2023-03-15', '2023-04-15', NULL),          -- Jane Smith взяла 1984, не вернула
+(3, 3, '2023-02-20', '2023-03-20', '2023-03-19'),  -- Petr Ivanov взял The Catcher in the Rye
+(4, 4, '2023-04-01', '2023-05-01', NULL),          -- Maria Petrova взяла Don Quixote
+(5, 5, '2023-05-10', '2023-06-10', '2023-06-09');  -- Carlos Gomez взял Les Misérables
