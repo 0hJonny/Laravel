@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('readers', function (Blueprint $table) {
             $table->id('reader_id')->comment('Идентификатор читателя (PK)');
+            $table->foreignId('reader_user_id')->constrained('users', 'id')->onDelete('cascade');
             $table->string('reader_name')->comment('Имя читателя');
             $table->string('reader_surname')->comment('Фамилия читателя');
             $table->string('reader_middle_name')->nullable()->comment('Отчество читателя');

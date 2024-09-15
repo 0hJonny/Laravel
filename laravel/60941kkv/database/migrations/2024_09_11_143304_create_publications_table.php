@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('publication_title')->comment('Название публикации');
             $table->string('publication_author')->comment('Автор публикации');
             $table->string('publication_publisher')->comment('Издательство');
-            $table->date('publication_date')->Now();
+            $table->date('publication_date')->comment('Дата публикации');
             $table->unsignedInteger('publication_page')->comment('Количество страниц');
             $table->string('publication_ISBN')->comment('ISBN');
             $table->foreignId('publication_publication_language')->constrained('languages', 'language_id')->onDelete('cascade');
