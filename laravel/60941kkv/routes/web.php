@@ -5,9 +5,7 @@ use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\ReaderController;
 use App\Http\Controllers\LoanController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [PublicationController::class, 'index'])->name('welcome');
 
 Route::get('/publications', [PublicationController::class, 'index'])->name('publications.index');
 Route::get('/publications/{id}', [PublicationController::class, 'show'])->name('publications.show');
