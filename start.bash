@@ -19,6 +19,7 @@ fi
 # Directories to create
 directories=(
     ./postgres/data
+    ./postgres/pgadmin
 )
 
 # Create necessary directories if they don't exist
