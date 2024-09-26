@@ -25,7 +25,7 @@ class Copy extends Model
 
     public function Condition()
     {
-        return $this->belongsTo(BookCondition::class, 'copy_condition_id', 'condition_id');
+        return $this->belongsTo(BookCondition::class, 'copy_condition_id', 'book_condition_id');
     }
 
     public function Reader()

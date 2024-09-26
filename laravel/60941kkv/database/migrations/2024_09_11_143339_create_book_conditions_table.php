@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('book_conditions', function (Blueprint $table) {
             $table->id('book_condition_id')->comment('Идентификатор состояния книги (PK)');
-            $table->foreignId('boook_condition_name')->constrained('book_wear_coefficients', 'book_wear_coefficient_id')->onDelete('cascade');
+            $table->foreignId('book_condition_name')->constrained('book_wear_coefficients', 'book_wear_coefficient_id')->onDelete('cascade');
             $table->string('book_condition_description')->comment('Описание состояния книги');
             $table->timestamps();
         

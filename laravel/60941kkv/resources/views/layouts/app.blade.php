@@ -25,6 +25,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('loans.index') }}">Долги</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('copies.index') }}">Экземпляры книг</a>
+                    </li>
                 </ul>
             </div>
         </div>

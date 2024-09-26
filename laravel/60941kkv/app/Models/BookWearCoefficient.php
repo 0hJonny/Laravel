@@ -19,6 +19,6 @@ class BookWearCoefficient extends Model
 
     public function BookConditions()
     {
-        return $this->hasMany(BookCondition::class, 'boook_condition_name', 'book_wear_coefficient_id');
+        return $this->hasMany(BookCondition::class, 'book_condition_name', 'book_wear_coefficient_id');
     }
 }
