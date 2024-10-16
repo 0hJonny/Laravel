@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Publication;
 use App\Models\BookCondition;
@@ -14,7 +15,7 @@ class CopyController extends Controller
      */
     public function index()
     {
-        $copies = Copy::with([ 'Publication', 'Condition'])->get();
+        $copies = Copy::with(['Publication', 'Condition'])->paginate(10);
         return view('copies.index', compact('copies'));
     }
 
@@ -80,6 +81,44 @@ class CopyController extends Controller
 
         return redirect()->route('copies.index')->with('success', 'Экземпляр книги обновлен');
     }
+
+    public function duplicate($id)
+    {
+        // Находим оригинальную запись
+        $copy = Copy::findOrFail($id);
+
+        // Возвращаем форму с данными для создания новой записи, но с пустым инвентарным номером
+        return view('copies.duplicate', [
+            'copy' => $copy,
+            'new_inventory_number' => $this->generateUniqueInventoryNumber(),
+        ]);
+    }
+
+    private function generateUniqueInventoryNumber()
+    {
+        // Генерация уникального номера (можете использовать логику на своё усмотрение)
+        do {
+            $newNumber = Str::random(8); // Например, случайная строка длиной 8 символов
+        } while (Copy::where('copy_inventory_number', $newNumber)->exists());
+
+        return $newNumber;
+    }
+
+    public function storeDuplicate(Request $request)
+{
+    // Валидация данных, включая уникальность инвентарного номера
+    $validatedData = $request->validate([
+        'copy_inventory_number' => ['required', 'string', 'max:255', 'unique:copies,copy_inventory_number'],
+        'copy_publication_id' => ['required', 'integer', 'exists:publications,publication_id'],
+        'copy_condition_id' => ['required', 'integer', 'exists:book_conditions,book_condition_id'],
+    ]);
+
+    // Создание новой записи на основе данных
+    Copy::create($validatedData);
+
+    return redirect()->route('copies.index')->with('success', 'Запись успешно скопирована.');
+}
+
 
     /**
      * Remove the specified resource from storage.

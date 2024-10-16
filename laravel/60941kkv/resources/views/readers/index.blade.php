@@ -2,25 +2,68 @@
 
 @section('content')
 <style>
-.table_wrapper {
-    max-height: 75vh;
-    overflow-y: auto;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-th, td {
-    padding: 1rem;
-    text-align: center;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-tbody {
-    overflow-y: scroll;
-}
+ .pagination {
+        display: flex;
+        justify-content: center;
+        padding-left: 0;
+        list-style: none;
+        border-radius: 0.25rem;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .pagination .page-item {
+        margin: 0 2px;
+    }
+
+    .pagination .page-link {
+        position: relative;
+        display: block;
+        padding: 0.5rem 0.75rem;
+        margin-left: -1px;
+        line-height: 1.25;
+        color: #007bff;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+    }
+
+    .pagination .page-item.active .page-link {
+        z-index: 1;
+        color: #fff;
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
+
+    .table_wrapper {
+        max-height: 75vh;
+        overflow-y: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 1rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    tbody {
+        overflow-y: scroll;
+    }
 </style>
-    <h1>Читатели</h1>
-    <div class="table_wrapper">
+<h1>Читатели</h1>
+<div class="table_wrapper">
     <table>
         <thead>
             <tr>
@@ -33,15 +76,36 @@ tbody {
         </thead>
         <tbody>
             @foreach($readers as $reader)
-                <tr>
-                    <td>{{ $reader->reader_name }}</td>
-                    <td>{{ $reader->reader_surname }}</td>
-                    <td>{{ $reader->reader_middle_name }}</td>
-                    <td>{{ $reader->user->user_name }}</td>
-                    <td><a href="{{ route('readers.show', $reader->reader_id) }}">Подробнее</a></td>
-                </tr>
+            <tr>
+                <td>{{ $reader->reader_name }}</td>
+                <td>{{ $reader->reader_surname }}</td>
+                <td>{{ $reader->reader_middle_name }}</td>
+                <td>{{ $reader->user->user_name }}</td>
+                <td><a href="{{ route('readers.show', $reader->reader_id) }}">Подробнее</a></td>
+            </tr>
             @endforeach
         </tbody>
     </table>
-    </div>
+</div>
+<div class="pagination">
+    @if ($readers->onFirstPage())
+    <span>← Назад</span>
+    @else
+    <a href="{{ $readers->previousPageUrl() }}">← Назад</a>
+    @endif
+
+    @foreach ($readers->getUrlRange(1, $readers->lastPage()) as $page => $url)
+    @if ($page == $readers->currentPage())
+    <span class="active">{{ $page }}</span>
+    @else
+    <a href="{{ $url }}">{{ $page }}</a>
+    @endif
+    @endforeach
+
+    @if ($readers->hasMorePages())
+    <a href="{{ $readers->nextPageUrl() }}">Вперед →</a>
+    @else
+    <span>Вперед →</span>
+    @endif
+</div>
 @endsection

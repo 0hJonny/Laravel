@@ -12,7 +12,7 @@ class LoanController extends Controller
      */
     public function index()
     {
-        $loans = Loan::with(['copy', 'reader'])->get();
+        $loans = Loan::with(['copy', 'reader'])->paginate(10);
         return view('loans.index', compact('loans'));
     }
 

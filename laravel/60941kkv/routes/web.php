@@ -12,3 +12,5 @@ Route::resource('publications', PublicationController::class);
 Route::resource('readers', ReaderController::class);
 Route::resource('loans', LoanController::class);
 Route::resource('copies', CopyController::class);
+Route::post('/copies/storeDuplicate', [CopyController::class, 'storeDuplicate'])->name('copies.storeDuplicate');
+Route::get('/copies/{id}/duplicate', [CopyController::class, 'duplicate'])->name('copies.duplicate');

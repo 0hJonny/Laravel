@@ -12,7 +12,7 @@ class PublicationController extends Controller
      */
     public function index()
     {
-        $publications = Publication::all();
+        $publications = Publication::paginate(10);
         return view('publications.index', compact('publications'));
     }
 
