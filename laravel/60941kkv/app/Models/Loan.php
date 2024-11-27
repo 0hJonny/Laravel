@@ -13,6 +13,7 @@ class Loan extends Model
     protected $primaryKey = 'loan_id';
     
     protected $fillable = [
+        'loan_date',
         'loan_reader_id',
         'loan_copy_id',
         'loan_return_date',

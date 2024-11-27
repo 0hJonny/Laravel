@@ -12,7 +12,6 @@ class ReaderController extends Controller
      */
     public function index()
     {
-        // Получение всех читателей с информацией о пользователе
         $readers = Reader::with('user')->paginate(10);
         return view('readers.index', compact('readers'));
     }

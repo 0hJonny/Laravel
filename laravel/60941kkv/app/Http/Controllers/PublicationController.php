@@ -10,9 +10,10 @@ class PublicationController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $publications = Publication::paginate(10);
+        $perPage = $request->input('per_page', 5);
+        $publications = Publication::paginate($perPage)->appends(['per_page' => $perPage]);
         return view('publications.index', compact('publications'));
     }
 
