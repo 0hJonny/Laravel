@@ -1,0 +1,17 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PublicationApiController;
+use App\Http\Controllers\ReaderApiController;
+use App\Http\Controllers\LoanApiController;
+
+Route::apiResource('publications', PublicationApiController::class)->only(['index','show']);
+Route::apiResource('readers',      ReaderApiController::class)     ->only(['index','show']);
+Route::apiResource('loans',        LoanApiController::class)       ->only(['index','show']);
+
+
+
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
