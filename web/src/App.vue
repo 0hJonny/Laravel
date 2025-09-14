@@ -21,10 +21,8 @@ onMounted(() => {
 
 <template>
   <header>
-    <!-- Навигационная «шапка» -->
     <h1>Vue вход</h1>
 
-    <!-- Авторизованный пользователь -->
     <div v-if="isAuthenticated">
       <p>Здравствуйте, {{ userName }}!</p>
       <button @click="logout">Выйти</button>

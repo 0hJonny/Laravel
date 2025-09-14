@@ -22,7 +22,8 @@ export const useAuthStore = defineStore('auth', {
 
         localStorage.setItem('token', data.token)
       } catch (e: unknown) {
-        this.errorMessage = `Неверные учётные данные. ${e}`
+        console.error(e)
+        this.errorMessage = `Неверные учётные данные.`
         this.logout()
       }
     },
