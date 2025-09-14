@@ -1,85 +1,76 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
+
+const email = ref('')
+const password = ref('')
+
+const auth = useAuthStore()
+
+const isAuthenticated = computed(() => auth.isAuthenticated)
+const userName = computed(() => auth.user?.user_name ?? 'пользователь')
+const authError = computed(() => auth.errorMessage)
+
+const login = () => auth.login({ email: email.value, password: password.value })
+const logout = () => auth.logout()
+
+onMounted(() => {
+  if (localStorage.getItem('token')) auth.isAuthenticated = true
+})
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+    <!-- Навигационная «шапка» -->
+    <h1>Vue вход</h1>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+    <!-- Авторизованный пользователь -->
+    <div v-if="isAuthenticated">
+      <p>Здравствуйте, {{ userName }}!</p>
+      <button @click="logout">Выйти</button>
     </div>
-  </header>
 
-  <RouterView />
+    <!-- Форма логина -->
+    <form v-else @submit.prevent="login">
+      <label
+        >Email
+        <input v-model="email" type="email" required />
+      </label>
+
+      <label
+        >Пароль
+        <input v-model="password" type="password" required />
+      </label>
+
+      <button type="submit">Войти</button>
+      <p v-if="authError" class="error">{{ authError }}</p>
+    </form>
+  </header>
 </template>
 
 <style scoped>
 header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
+  max-width: 420px;
+  margin: 60px auto;
+  padding: 24px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   text-align: center;
-  margin-top: 2rem;
 }
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
+label {
+  display: block;
+  margin: 12px 0;
 }
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+input {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 4px;
 }
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+button {
+  margin-top: 12px;
 }
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.error {
+  color: #c00;
+  margin-top: 8px;
 }
 </style>
