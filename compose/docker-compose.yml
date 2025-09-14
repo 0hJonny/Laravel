@@ -61,7 +61,34 @@ services:
       - app
     container_name: project_laravel_nginx
     networks:
-      - db_network
+      - app_network
+  
+  vue-app:
+    container_name: vue-app
+    environment:
+      API_GATEWAY: app:9000
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../web:/app
+      - /app/node_modules
+    # restart: always
+    depends_on:
+      - app
+    networks:
+      - app_network
+  # vue-app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - .:/app 
+  #   restart: always
 
 # php-laravel
   app:
@@ -84,6 +111,7 @@ services:
     container_name: project_laravel_app
     networks:
       - db_network
+      - app_network
 
 
 # Networks
@@ -93,3 +121,8 @@ networks:
     ipam:
       config:
         - subnet: 172.12.0.0/28
+ app_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.13.0.0/28
