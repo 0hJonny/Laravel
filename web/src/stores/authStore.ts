@@ -1,17 +1,34 @@
 import { defineStore } from 'pinia'
 import { http } from '@/api/http'
 import { ENDPOINTS } from '@/api/endpoints'
-import type { LoginResponse } from '@/types'
+import type { LoginResponse, User } from '@/types'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('token') as string | null,
-    user: null as LoginResponse['user'] | null,
+    user: null as User | null,
     isAuthenticated: !!localStorage.getItem('token'),
     errorMessage: '',
   }),
 
   actions: {
+    async initialize() {
+      if (this.token && !this.user) await this.getUser()
+    },
+
+    async getUser() {
+      if (!this.token) return
+      try {
+        const { data } = await http.get<User>(ENDPOINTS.USERDATA, {
+          headers: { Authorization: `Bearer ${this.token}` },
+        })
+        this.user = data
+        this.isAuthenticated = true
+      } catch {
+        this.logout()
+      }
+    },
+
     async login(credentials: { email: string; password: string; device?: string }) {
       try {
         const { data } = await http.post<LoginResponse>(ENDPOINTS.LOGIN, credentials)

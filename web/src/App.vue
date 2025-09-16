@@ -1,49 +1,45 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
-const email = ref('')
-const password = ref('')
-
+const route = useRoute()
+const router = useRouter()
 const auth = useAuthStore()
 
 const isAuthenticated = computed(() => auth.isAuthenticated)
 const userName = computed(() => auth.user?.user_name ?? 'пользователь')
-const authError = computed(() => auth.errorMessage)
 
-const login = () => auth.login({ email: email.value, password: password.value })
-const logout = () => auth.logout()
+const isActive = (path: string) => route.path.startsWith(path)
 
-onMounted(() => {
-  if (localStorage.getItem('token')) auth.isAuthenticated = true
-})
+const logout = async () => {
+  await auth.logout()
+  router.push('/login')
+}
 </script>
 
 <template>
   <header>
-    <h1>Vue вход</h1>
+    <h1>Библиотека</h1>
 
-    <div v-if="isAuthenticated">
-      <p>Здравствуйте, {{ userName }}!</p>
-      <button @click="logout">Выйти</button>
+    <div v-if="isAuthenticated" class="auth-nav">
+      <span>Здравствуйте, {{ userName }}!</span>
+      <button @click="logout">Выход</button>
     </div>
+    <RouterLink v-else to="/login">Вход</RouterLink>
 
-    <!-- Форма логина -->
-    <form v-else @submit.prevent="login">
-      <label
-        >Email
-        <input v-model="email" type="email" required />
-      </label>
-
-      <label
-        >Пароль
-        <input v-model="password" type="password" required />
-      </label>
-
-      <button type="submit">Войти</button>
-      <p v-if="authError" class="error">{{ authError }}</p>
-    </form>
+    <nav v-if="isAuthenticated" class="tabs">
+      <RouterLink to="/loans" class="tab" :class="{ active: isActive('/loans') }">Loans</RouterLink>
+      <RouterLink to="/publications" class="tab" :class="{ active: isActive('/publications') }"
+        >Publications</RouterLink
+      >
+      <RouterLink to="/readers" class="tab" :class="{ active: isActive('/readers') }"
+        >Readers</RouterLink
+      >
+    </nav>
   </header>
+
+  <RouterView />
 </template>
 
 <style scoped>
@@ -70,5 +66,27 @@ button {
 .error {
   color: #c00;
   margin-top: 8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.tab {
+  text-decoration: none;
+  color: #555;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.tab.active {
+  background: #3b82f6;
+  color: #fff;
+}
+.auth-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 </style>

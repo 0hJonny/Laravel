@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { useAuthStore } from '@/stores/authStore'
 import { API_BASE_URL } from './endpoints'
 
 export const http = axios.create({
@@ -20,3 +21,11 @@ http.interceptors.response.use(
     return Promise.reject(err)
   },
 )
+
+http.interceptors.request.use((config) => {
+  const auth = useAuthStore()
+  if (auth.token) {
+    config.headers.Authorization = `Bearer ${auth.token}`
+  }
+  return config
+})

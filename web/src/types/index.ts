@@ -1,12 +1,14 @@
 /* TODO: раскидать по файлам */
 
-/* Пользователь: приходит ТОЛЬКО токеном*/
+/* Пользователь */
 export interface LoginResponse {
   token: string
-  user: {
-    user_name: string
-    email: string
-  }
+  user: User
+}
+
+export interface User {
+  user_name: string
+  email: string
 }
 
 /* Сущность Reader */

@@ -33,6 +33,16 @@ class AuthController extends Controller
         ]);
     }
 
+    public function getUser(Request $request)
+    {
+        $u = $request->user();
+
+        return response()->json([
+            'user_name' => $u->user_name,
+            'email'     => $u->email,
+        ]);
+    }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
