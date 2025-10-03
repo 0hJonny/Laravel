@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ReaderSeeder::class,
             CopiesSeeder::class,
             LoanSeeder::class,
+            AdminSeeder::class,
         ]);
         
     }

@@ -2,6 +2,9 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
+import InputText from 'primevue/inputtext'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
 
 const email = ref('')
 const password = ref('')
@@ -13,51 +16,49 @@ const authError = computed(() => auth.errorMessage)
 
 const login = async () => {
   await auth.login({ email: email.value, password: password.value })
-  if (auth.isAuthenticated) router.push('/loans') // редирект после успеха
+  if (auth.isAuthenticated) router.push('/loans')
 }
 </script>
 
 <template>
-  <section>
-    <h1>Вход</h1>
-    <form @submit.prevent="login">
-      <label>
-        Email
-        <input v-model="email" type="email" required />
-      </label>
-      <label>
-        Пароль
-        <input v-model="password" type="password" required />
-      </label>
-      <button type="submit">Войти</button>
-      <p v-if="authError" class="error">{{ authError }}</p>
-    </form>
-  </section>
-</template>
+  <div class="flex justify-center items-center min-h-screen">
+    <Card class="w-full max-w-md">
+      <template #title>
+        <h1 class="text-center text-2xl font-bold">Вход</h1>
+      </template>
+      <template #content>
+        <form @submit.prevent="login" class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <label for="email" class="font-semibold">Email</label>
+            <InputText
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="Введите ваш email"
+              required
+              class="w-full"
+            />
+          </div>
 
-<style scoped>
-section {
-  max-width: 420px;
-  margin: 60px auto;
-  padding: 24px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  text-align: center;
-}
-label {
-  display: block;
-  margin: 12px 0;
-}
-input {
-  width: 100%;
-  padding: 6px 8px;
-  margin-top: 4px;
-}
-button {
-  margin-top: 12px;
-}
-.error {
-  color: #c00;
-  margin-top: 8px;
-}
-</style>
+          <div class="flex flex-col gap-2">
+            <label for="password" class="font-semibold">Пароль</label>
+            <InputText
+              id="password"
+              v-model="password"
+              type="password"
+              placeholder="Введите ваш пароль"
+              required
+              class="w-full"
+            />
+          </div>
+
+          <p v-if="authError" class="text-red-500 text-sm mt-1 mb-0">
+            {{ authError }}
+          </p>
+
+          <Button label="Войти" type="submit" class="w-full mt-4" />
+        </form>
+      </template>
+    </Card>
+  </div>
+</template>
