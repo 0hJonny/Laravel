@@ -59,10 +59,11 @@ const goToLogin = () => {
     <template #end>
       <div v-if="isAuthenticated" class="flex items-center gap-2">
         <Avatar
+          :label="userName.charAt(0).toUpperCase()"
           icon="pi pi-user"
           size="normal"
           class="mr-2"
-          style="background-color: var(--primary-color); color: var(--primary-color-text)"
+          style="background-color: var(--p-avatar-background); color: var(--primary-color-text)"
         />
         <span class="font-medium">Здравствуйте, {{ userName }}!</span>
         <Button

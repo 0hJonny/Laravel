@@ -1,15 +1,14 @@
-version: '3'
+version: "3"
 services:
-# Init Database
+  # Init Database
   # Postgres
   postgres:
-    container_name: project_laravel_postgres
     build:
-     context: ../postgres
-     dockerfile: Dockerfile
-     args:
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      context: ../postgres
+      dockerfile: Dockerfile
+      args:
+        ADMIN_USERNAME: ${ADMIN_USERNAME}
+        ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     shm_size: 1g
     # restart: always
     volumes:
@@ -21,25 +20,24 @@ services:
       - ${DATASOURCE_PORT}:5432
     environment:
       LANG: en_US.utf8
-      POSTGRES_INITDB_ARGS: '--locale-provider=icu --icu-locale=en_US'
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=en_US"
       DATASOURCE_USER: ${DATASOURCE_USER}
       POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
-      TZ: 'Asia/Yekaterinburg'
-      PGTZ: 'Asia/Yekaterinburg'
+      TZ: "Asia/Yekaterinburg"
+      PGTZ: "Asia/Yekaterinburg"
     networks:
       - db_network
 
-# PgAdmin
+  # PgAdmin
   pgadmin:
-    container_name: project_laravel_pgadmin4
     image: dpage/pgadmin4
     environment:
       PGADMIN_LISTEN_PORT: 5050
       PGADMIN_LISTEN_ADDRESS: 0.0.0.0
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-      TZ: 'GMT+5'
-      PGTZ: 'GMT+5'
+      TZ: "GMT+5"
+      PGTZ: "GMT+5"
     ports:
       - 5050:5050
     volumes:
@@ -49,7 +47,7 @@ services:
     networks:
       - db_network
 
-# Nginx
+  # Nginx
   nginx:
     image: nginx:latest
     volumes:
@@ -59,14 +57,12 @@ services:
       - "80:80"
     depends_on:
       - app
-    container_name: project_laravel_nginx
     networks:
       - app_network
-  
+
   vue-app:
-    container_name: vue-app
     environment:
-      API_GATEWAY: app:9000
+      - VITE_API_URL=http://localhost:80
     build:
       context: ../web
       dockerfile: Dockerfile
@@ -74,7 +70,6 @@ services:
       - "5173:5173"
     volumes:
       - ../web:/app
-      - /app/node_modules
     # restart: always
     depends_on:
       - app
@@ -87,10 +82,10 @@ services:
   #   ports:
   #     - "80:80"
   #   volumes:
-  #     - .:/app 
+  #     - .:/app
   #   restart: always
 
-# php-laravel
+  # php-laravel
   app:
     build:
       context: ../laravel
@@ -105,24 +100,17 @@ services:
       # - APP_KEY=${APP_KEY}
       - APP_DEBUG=${APP_DEBUG}
       - APP_TIMEZONE=${APP_TIMEZONE}
+      - APP_URL=http://localhost
       # - APP_URL=${APP_URL}
     depends_on:
       - postgres
-    container_name: project_laravel_app
     networks:
       - db_network
       - app_network
 
-
 # Networks
 networks:
- db_network:
+  db_network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.12.0.0/28
- app_network:
+  app_network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.13.0.0/28
