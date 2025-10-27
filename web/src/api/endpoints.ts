@@ -6,6 +6,9 @@ export const ENDPOINTS = {
   LOGOUT: '/logout',
   USERDATA: '/user',
   PUBLICATIONS: '/publications',
-  READERS: '/readers',
+  PUBLICATIONS_TOTAL: '/publications_total',
   LOANS: '/loans',
+  LOANS_TOTAL: '/loans_total',
+  READERS: '/readers',
+  READERS_TOTAL: '/readers_total',
 }

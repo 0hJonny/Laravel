@@ -22,18 +22,6 @@ export interface Reader {
   updated_at: string | null
 }
 
-/* Сущность Loan */
-export interface Loan {
-  loan_id: number
-  loan_copy_id: number
-  loan_reader_id: number
-  loan_date: string
-  loan_return_date: string | null
-  loan_return_date_plan: string
-  created_at: string | null
-  updated_at: string | null
-}
-
 /* Сущность Publication */
 export interface Publication {
   publication_id: number
@@ -46,4 +34,31 @@ export interface Publication {
   publication_publication_language: number
   created_at: string | null
   updated_at: string | null
+}
+
+/* Сущность Copy */
+export interface Copy {
+  copy_id: number
+  copy_inventory_number: string
+  copy_publication_id: number
+  copy_condition_id: number
+  copy_reader_id: number
+  created_at: string | null
+  updated_at: string | null
+  publication?: Publication
+}
+
+/* Сущность Loan */
+export interface Loan {
+  loan_id: number
+  loan_copy_id: number
+  loan_reader_id: number
+  loan_date: string
+  loan_return_date: string | null
+  loan_return_date_plan: string
+  created_at: string | null
+  updated_at: string | null
+
+  copy?: Copy
+  reader?: Reader
 }

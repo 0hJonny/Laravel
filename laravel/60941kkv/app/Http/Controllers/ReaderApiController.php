@@ -10,9 +10,28 @@ class ReaderApiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Reader::all(), 200);
+        $page = (int) $request->get('page', 0);
+        $perPage = (int) $request->get('perpage', 10);
+
+        $readers = Reader::paginate($perPage, ['*'], 'page', $page + 1);
+
+        return response()->json([
+            'data' => $readers->items(),
+            'current_page' => $readers->currentPage(),
+            'per_page' => $readers->perPage(),
+            'total_pages' => $readers->lastPage(),
+        ]);
+
+        // return response()->json(Reader::all(), 200);
+    }
+
+    public function total()
+    {
+        return response()->json([
+            'total' => Reader::count(),
+        ]);
     }
 
     /**

@@ -10,9 +10,29 @@ class LoanApiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Loan::all(), 200);
+        $page = (int) $request->get('page', 0);
+        $perPage = (int) $request->get('perpage', 10);
+
+        $loans = Loan::with(['copy.publication', 'reader'])
+                     ->paginate($perPage, ['*'], 'page', $page + 1);
+
+        return response()->json([
+            'data' => $loans->items(),
+            'current_page' => $loans->currentPage(),
+            'per_page' => $loans->perPage(),
+            'total_pages' => $loans->lastPage(),
+        ]);
+
+        // return response()->json(Loan::all(), 200);
+    }
+
+    public function total()
+    {
+        return response()->json([
+            'total' => Loan::count(),
+        ]);
     }
 
     /**
