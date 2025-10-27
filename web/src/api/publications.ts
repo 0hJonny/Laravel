@@ -11,3 +11,8 @@ export const getPublicationsTotal = () => http.get<{ total: number }>(ENDPOINTS.
 
 export const getPublication = (id: number) =>
   http.get<Publication>(`${ENDPOINTS.PUBLICATIONS}/${id}`)
+
+export const createPublication = (formData: FormData) =>
+  http.post(ENDPOINTS.CREATE_PUBLICATION, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })

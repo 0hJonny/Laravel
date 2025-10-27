@@ -29,6 +29,10 @@ class AppServiceProvider extends ServiceProvider
             return in_array($user->role->name, ['editor', 'admin']);
         });
 
+        Gate::define('create-publication', function ($user) {
+            return in_array($user->role->name, ['editor', 'admin']);
+        });
+
         Gate::define('reader', function (User $user, $copy) {
             return in_array($user->role->name, ['reader', 'editor', 'admin']);
         });

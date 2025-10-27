@@ -63,6 +63,7 @@ services:
   vue-app:
     environment:
       - VITE_API_URL=http://localhost:80
+      - VITE_APP_S3_URL=http://localhost:9000/publications-bucket
     build:
       context: ../web
       dockerfile: Dockerfile
@@ -104,20 +105,22 @@ services:
       # - APP_URL=${APP_URL}
       # Minio
       - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
-      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
       - AWS_DEFAULT_REGION=us-east-1
       - AWS_BUCKET=publications-bucket
-      - AWS_ENDPOINT=http://localhost:9000
+      - AWS_ENDPOINT=http://minio:9000
+      - AWS_URL=http://localhost:9000/publications-bucket
       - AWS_USE_PATH_STYLE_ENDPOINT=true
       - FILESYSTEM_DISK=s3
     depends_on:
       - postgres
+      - minio
     networks:
       - db_network
       - app_network
 
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     ports:
       - "9000:9000" # Проброс API
       - "9001:9001" # Проброс консоли
@@ -127,6 +130,8 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+    networks:
+      - app_network
 
 # Networks
 networks:

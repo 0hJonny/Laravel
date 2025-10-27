@@ -12,6 +12,7 @@ Route::middleware('auth:sanctum')->group(function () {
      Route::get('/user', [AuthController::class, 'getUser']);
      Route::post('/logout',[AuthController::class, 'logout']);
 
+     Route::post('/publications', [PublicationApiController::class, 'store']);
      Route::apiResource('publications', PublicationApiController::class)->only(['index','show']);
      Route::get('publications_total', [PublicationApiController::class, 'total']);
 

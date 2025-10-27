@@ -3,7 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Publication;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PublicationApiController extends Controller
 {
@@ -39,7 +44,53 @@ class PublicationApiController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        if (Gate::denies('create-publication')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'publication_title' => 'required|string|max:255',
+            'publication_author' => 'required|string|max:255',
+            'publication_publisher' => 'required|string|max:255',
+            'publication_date' => 'required|date',
+            'publication_page' => 'required|integer|min:1',
+            'publication_ISBN' => 'required|string|size:13',
+            'publication_publication_language' => 'required|integer|exists:languages,language_id',
+            'publication_cover' => 'required|image|mimes:jpeg,png,jpg|max:5120',
+        ]);
+
+        try {
+            $file = $request->file('publication_cover');
+            $filename = uniqid('cover_') . '.' . $file->getClientOriginalExtension();
+            
+            $path = Storage::disk('s3')->putFileAs('covers', $file, $filename, 'public');
+
+            if (!$path) {
+                Log::error('S3 upload failed', ['filename' => $filename]);
+                return response()->json(['error' => 'Failed to upload cover'], 500);
+            }
+
+            $validated['publication_cover'] = $path;
+            $publication = Publication::create($validated);
+
+            return response()->json([
+                'message' => 'Publication created successfully',
+                'data' => $publication,
+            ], 201);
+
+        } catch (QueryException $e) {
+            Log::error('Database error', ['code' => $e->getCode()]);
+            
+            if ($e->getCode() == '23000') {
+                return response()->json(['error' => 'Duplicate publication'], 422);
+            }
+            
+            return response()->json(['error' => 'Database error'], 500);
+            
+        } catch (Exception $e) {
+            Log::error('Upload error', ['message' => $e->getMessage()]);
+            return response()->json(['error' => 'Failed to create publication'], 500);
+        }
     }
 
     /**

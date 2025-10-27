@@ -5,6 +5,7 @@ const Login = () => import('@/views/LoginView.vue')
 const Loans = () => import('@/views/LoansView.vue')
 const Publications = () => import('@/views/PublicationsView.vue')
 const Readers = () => import('@/views/ReadersView.vue')
+const CreatePublication = () => import('@/components/CreatePublication.vue')
 
 const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/loans' },
@@ -15,6 +16,11 @@ const routes: RouteRecordRaw[] = [
     name: 'Publications',
     component: Publications,
     meta: { requiresAuth: true },
+  },
+  {
+    path: '/createPublication',
+    name: 'CreatePublication',
+    component: CreatePublication,
   },
   { path: '/readers', name: 'Readers', component: Readers, meta: { requiresAuth: true } },
 ]

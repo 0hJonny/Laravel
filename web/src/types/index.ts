@@ -32,8 +32,10 @@ export interface Publication {
   publication_page: number
   publication_ISBN: string
   publication_publication_language: number
-  created_at: string | null
-  updated_at: string | null
+  publication_cover?: string | null
+  created_at?: string | null
+  updated_at?: string | null
+  cover_url?: string
 }
 
 /* Сущность Copy */

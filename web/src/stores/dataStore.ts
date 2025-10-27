@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getPublications, getPublicationsTotal } from '@/api/publications'
+import { getPublications, getPublicationsTotal, createPublication } from '@/api/publications'
 import { getLoans, getLoansTotal } from '@/api/loans'
 import { getReaders, getReadersTotal } from '@/api/readers'
 import type { Publication, Loan, Reader } from '@/types'
@@ -37,7 +37,10 @@ export const useDataStore = defineStore('data', {
     async get_publications(page: number = 0, perpage: number = 10) {
       try {
         const { data } = await getPublications(page, perpage)
-        this.publications = data.data // сохраняем данные
+        this.publications = data.data.map((pub: Publication) => ({
+          ...pub,
+          cover_url: pub.cover_url || `${import.meta.env.VITE_APP_S3_URL}/covers/default.png`,
+        }))
         this.publications_pagination = {
           current_page: data.current_page,
           per_page: data.per_page,
@@ -61,6 +64,19 @@ export const useDataStore = defineStore('data', {
       } catch (error: unknown) {
         console.error('Error fetching publications total:', error)
         this.errorMessage = 'Ошибка загрузки общего количества публикаций'
+        throw error
+      }
+    },
+
+    async create_publication(formData: FormData) {
+      try {
+        const { data } = await createPublication(formData) // из api/publications
+        await this.get_publications(0, this.publications_pagination.per_page || 10)
+        this.errorMessage = ''
+        return data // { message, data: publication с cover_url }
+      } catch (error: unknown) {
+        console.error('Error creating publication:', error)
+        this.errorMessage = 'Ошибка создания публикации'
         throw error
       }
     },
