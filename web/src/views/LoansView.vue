@@ -74,7 +74,7 @@ const renderReaderName = (loan: Loan) => {
       <Column field="loan_date" header="Loan Date"></Column>
       <Column field="loan_return_date" header="Return Date"></Column>
       <Column field="loan_return_date_plan" header="Planned Return"></Column>
-      <Column field="created_at" header="Created"></Column>
+      <!-- <Column field="created_at" header="Created"></Column> -->
     </DataTable>
 
     <p v-if="dataStore.errorMessage" class="text-red-500">{{ dataStore.errorMessage }}</p>
