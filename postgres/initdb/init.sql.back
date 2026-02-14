@@ -1,11 +1,11 @@
--- Удаляем базу данных "Library"
-DROP DATABASE IF EXISTS library;
+-- Удаляем базу данных "laravel_prod"
+DROP DATABASE IF EXISTS laravel_prod;
 
--- Создание базу данных "library"
-CREATE DATABASE library;
+-- Создание базу данных "laravel_prod"
+CREATE DATABASE laravel_prod;
 
--- Подключение к базе данных "library"
-\c library;
+-- Подключение к базе данных "laravel_prod"
+\c laravel_prod;
 
 -- Создание таблицы "Language" (Язык)
 CREATE TABLE Language (
