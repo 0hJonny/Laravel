@@ -1,17 +1,26 @@
-FROM node:alpine AS dev
+# ============================================
+# STAGE 1: Build Vue
+# ============================================
+FROM node:20-alpine AS builder
 
 WORKDIR /app
-
-# copy dependency lists first for layer-caching
 COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
 
-RUN npm install
+# ============================================
+# STAGE 2: NGINX Production
+# ============================================
+FROM nginx:alpine AS production
 
-# copy the rest of the source
-# COPY . .
+# Копируем статику
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Vite’s default port
-EXPOSE 5173
+# Healthcheck (порт 80)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
 
-# CMD ["npm", "run", "dev"]
-CMD [ "sleep", "infinity" ]
+# Запускаем NGINX
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

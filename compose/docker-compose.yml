@@ -1,144 +1,191 @@
-version: "3"
 services:
-  # Init Database
-  # Postgres
   postgres:
+    container_name: project_laravel_postgres
     build:
       context: ../postgres
       dockerfile: Dockerfile
-      args:
-        ADMIN_USERNAME: ${ADMIN_USERNAME}
-        ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     shm_size: 1g
-    # restart: always
+    restart: unless-stopped
     volumes:
-      - ../postgres/data:/var/lib/postgresql/data
-      # - ../postgres/backup:/opt/postgres/backup
-      # - ../postgres/exchange:/opt/exchange
-      - ../postgres/initdb:/docker-entrypoint-initdb.d
-    ports:
-      - ${DATASOURCE_PORT}:5432
+      - postgres_data:/var/lib/postgresql/data
+      - ../postgres/initdb:/docker-entrypoint-initdb.d:ro
     environment:
-      LANG: en_US.utf8
-      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=en_US"
-      DATASOURCE_USER: ${DATASOURCE_USER}
+      LANG: ru_RU.utf8
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=ru_RU"
+      POSTGRES_USER: ${DATASOURCE_USER}
       POSTGRES_PASSWORD: ${DATASOURCE_PASSWORD}
-      TZ: "Asia/Yekaterinburg"
-      PGTZ: "Asia/Yekaterinburg"
+      POSTGRES_DB: ${DATASOURCE_DB}
+      TZ: Asia/Yekaterinburg
+      PGTZ: Asia/Yekaterinburg
     networks:
       - db_network
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U ${DATASOURCE_USER} -d ${DATASOURCE_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
-  # PgAdmin
-  pgadmin:
-    image: dpage/pgadmin4
+  minio:
+    container_name: project_minio
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    restart: unless-stopped
+    volumes:
+      - minio_data:/data
+      - ../minio/init-buckets.sh:/docker-entrypoint-initdb.d/init-buckets.sh:ro
     environment:
-      PGADMIN_LISTEN_PORT: 5050
-      PGADMIN_LISTEN_ADDRESS: 0.0.0.0
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-      TZ: "GMT+5"
-      PGTZ: "GMT+5"
-    ports:
-      - 5050:5050
-    volumes:
-      - ../postgres/pgadmin/data:/var/lib/pgadmin
-    depends_on:
-      - postgres
-    networks:
-      - db_network
-
-  # Nginx
-  nginx:
-    image: nginx:latest
-    volumes:
-      - ../laravel/60941kkv:/var/www/html
-      - ../nginx/conf.d:/etc/nginx/conf.d
-    ports:
-      - "80:80"
-    depends_on:
-      - app
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_CONSOLE_URL}
+      MINIO_SERVER_URL: ${MINIO_API_URL}
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: server /data --console-address ":9001"
 
-  vue-app:
-    environment:
-      - VITE_API_URL=http://localhost:80
-      - VITE_APP_S3_URL=http://localhost:9000/publications-bucket
-    build:
-      context: ../web
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    volumes:
-      - ../web:/app
-    # restart: always
-    depends_on:
-      - app
-    networks:
-      - app_network
-  # vue-app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - .:/app
-  #   restart: always
-
-  # php-laravel
   app:
+    container_name: project_laravel_app
     build:
       context: ../laravel
       dockerfile: Dockerfile
-    volumes:
-      - ../laravel/60941kkv:/var/www/html
+    restart: unless-stopped
     environment:
-      - DB_USERNAME=${DATASOURCE_USER}
-      - DB_PASSWORD=${DATASOURCE_PASSWORD}
-      - APP_NAME=${APP_NAME}
-      - APP_ENV=${APP_ENV}
-      # - APP_KEY=${APP_KEY}
-      - APP_DEBUG=${APP_DEBUG}
-      - APP_TIMEZONE=${APP_TIMEZONE}
-      - APP_URL=http://localhost
-      # - APP_URL=${APP_URL}
-      # Minio
-      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
-      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
-      - AWS_DEFAULT_REGION=us-east-1
-      - AWS_BUCKET=publications-bucket
-      - AWS_ENDPOINT=http://minio:9000
-      - AWS_URL=http://localhost:9000/publications-bucket
-      - AWS_USE_PATH_STYLE_ENDPOINT=true
-      - FILESYSTEM_DISK=s3
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DATASOURCE_DB}
+      DB_USERNAME: ${DATASOURCE_USER}
+      DB_PASSWORD: ${DATASOURCE_PASSWORD}
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY}
+      APP_TIMEZONE: ${APP_TIMEZONE}
+      APP_URL: ${APP_URL}
+      LOG_CHANNEL: stack
+      LOG_LEVEL: error
+      SESSION_DRIVER: file
+      CACHE_DRIVER: file
+      QUEUE_CONNECTION: sync
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_BUCKET: ${AWS_BUCKET}
+      AWS_ENDPOINT: ${MINIO_API_URL}
+      AWS_URL: ${AWS_URL}
+      AWS_USE_PATH_STYLE_ENDPOINT: "true"
+      FILESYSTEM_DISK: s3
+      SESSION_SECURE_COOKIE: "true"
     depends_on:
-      - postgres
-      - minio
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     networks:
       - db_network
       - app_network
-
-  minio:
-    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
-    ports:
-      - "9000:9000" # Проброс API
-      - "9001:9001" # Проброс консоли
-    environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
-      - minio_data:/data
-    command: server /data --console-address ":9001"
+      - app_storage:/var/www/html/storage
+      - app_logs:/var/www/html/storage/logs
+    healthcheck:
+      test: ["CMD-SHELL", "exit 0"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  vue:
+    container_name: project_vue_app
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_APP_S3_URL: ${VITE_APP_S3_URL}
     networks:
       - app_network
+    volumes:
+      - vue_dist:/usr/share/nginx/html
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /usr/share/nginx/html/index.html"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-# Networks
+  nginx:
+    container_name: project_nginx_proxy
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../nginx/sites-enabled:/etc/nginx/sites-enabled:ro
+      - ../nginx/ssl:/etc/nginx/ssl:ro
+      - ../nginx/certbot-www:/var/www/certbot:ro
+      - ../laravel/60941kkv:/var/www/html:ro
+      - vue_dist:/usr/share/nginx/html:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      app:
+        condition: service_healthy
+      vue:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - app_network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  certbot:
+    container_name: project_certbot
+    image: certbot/certbot:latest
+    profiles: ["certbot"]
+    volumes:
+      - ../nginx/ssl:/etc/letsencrypt
+      - ../nginx/certbot-www:/var/www/certbot
+      - ../scripts:/scripts
+    depends_on:
+      - nginx
+    networks:
+      - app_network
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot && nginx -s reload; sleep 12h & wait $${!}; done;'"
+
 networks:
   db_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.12.0.0/24
   app_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.13.0.0/24
 
 volumes:
+  postgres_data:
   minio_data:
+  app_storage:
+  app_logs:
+  vue_dist:

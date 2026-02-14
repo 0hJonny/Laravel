@@ -1,0 +1,15 @@
+# Generated configs
+nginx/conf.d/*.conf
+nginx/sites-enabled/*.conf
+nginx/env.list
+scripts/domains.txt
+
+# SSL certificates
+nginx/ssl/
+
+# Environment variables
+.env
+
+# Docker volumes
+postgres/data/
+minio/data/

@@ -1,0 +1,34 @@
+upstream php-fpm {
+    server app:9000;
+}
+
+server {
+    listen 80;
+    server_name ${API_DOMAIN};
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name ${API_DOMAIN};
+    root /var/www/html/public;
+    index index.php;
+
+    ssl_certificate /etc/nginx/ssl/live/${API_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/live/${API_DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass php-fpm;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+}

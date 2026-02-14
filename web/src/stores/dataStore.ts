@@ -31,6 +31,8 @@ export const useDataStore = defineStore('data', {
     },
 
     errorMessage: '' as string,
+    loading: false,
+    errorCode: null,
   }),
 
   actions: {
