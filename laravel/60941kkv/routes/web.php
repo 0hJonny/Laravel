@@ -15,11 +15,11 @@ Route::resource('loans', LoanController::class)->middleware('auth');
 Route::resource('copies', CopyController::class)->middleware('auth');
 Route::post('/copies/storeDuplicate', [CopyController::class, 'storeDuplicate'])->name('copies.storeDuplicate')->middleware('auth');
 Route::get('/copies/{id}/duplicate', [CopyController::class, 'duplicate'])->name('copies.duplicate')->middleware('auth');
-Route::get('copies/{copy}/show', [CopyController::class, 'show'])->name('copies.show')->middleware('auth');
+//Route::get('copies/{copy}/show', [CopyController::class, 'show'])->name('copies.show')->middleware('auth');
 
 Route::post('/loans/storeDuplicate', [LoanController::class, 'storeDuplicate'])->name('loans.storeDuplicate')->middleware('auth');
 Route::get('/loans/{id}/duplicate', [LoanController::class, 'duplicate'])->name('loans.duplicate')->middleware('auth');
-Route::get('loans/{loan}/show', [LoanController::class, 'show'])->name('loans.show')->middleware('auth');
+//Route::get('loans/{loan}/show', [LoanController::class, 'show'])->name('loans.show')->middleware('auth');
 Route::get('loans/{loan}/copy', [LoanController::class, 'copy'])->name('loans.copy')->middleware('auth');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

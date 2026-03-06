@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { API_BASE_URL } from './endpoints'
 
 export const http = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: import.meta.env.VITE_APP_BACKEND_URL,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

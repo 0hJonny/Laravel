@@ -63,14 +63,14 @@ class PublicationApiController extends Controller
             $file = $request->file('publication_cover');
             $filename = uniqid('cover_') . '.' . $file->getClientOriginalExtension();
             
-            $path = Storage::disk('s3')->putFileAs('covers', $file, $filename, 'public');
+            $path = Storage::disk('s3')->putFileAs('.', $file, $filename, 'public');
 
             if (!$path) {
                 Log::error('S3 upload failed', ['filename' => $filename]);
                 return response()->json(['error' => 'Failed to upload cover'], 500);
             }
 
-            $validated['publication_cover'] = $path;
+            $validated['publication_cover'] = 'covers/' . basename($path);
             $publication = Publication::create($validated);
 
             return response()->json([

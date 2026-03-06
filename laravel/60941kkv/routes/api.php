@@ -8,12 +8,12 @@ use App\Http\Controllers\LoanApiController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->name('api.')->group(function () {
      Route::get('/user', [AuthController::class, 'getUser']);
      Route::post('/logout',[AuthController::class, 'logout']);
 
-     Route::post('/publications', [PublicationApiController::class, 'store']);
-     Route::apiResource('publications', PublicationApiController::class)->only(['index','show']);
+     //Route::post('/publications', [PublicationApiController::class, 'store']);
+     Route::apiResource('publications', PublicationApiController::class)->only(['index','show', 'store']);
      Route::get('publications_total', [PublicationApiController::class, 'total']);
 
      Route::apiResource('loans', LoanApiController::class)->only(['index','show']);
