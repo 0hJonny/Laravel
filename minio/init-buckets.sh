@@ -1,42 +1,26 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
-echo "⏳ Waiting for MinIO to be ready..."
-until curl -sf http://localhost:9000/minio/health/live; do
-    sleep 5
+# Ждем пока MinIO станет доступен (проверяем порт 9000)
+echo "Waiting for MinIO to be ready..."
+until mc alias set myminio http://localhost:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin} 2>/dev/null; do
+  echo "MinIO is unavailable - sleeping"
+  sleep 2
 done
 
-echo "✅ MinIO is ready!"
+echo "MinIO is up and running!"
 
-# Install MinIO client
-if ! which mc >/dev/null 2>&1; then
-    echo "📥 Installing MinIO client..."
-    wget -q https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/bin/mc
-    chmod +x /usr/bin/mc
-fi
+# Создаем бакет 'covers', если он еще не существует
+# Флаг --ignore-existing предотвращает ошибку, если бакет уже создан
+echo "Creating bucket 'covers'..."
+mc mb --ignore-existing myminio/covers
 
-echo "🔧 Creating buckets..."
+# Устанавливаем политику доступа 'public' для бакета 'covers'
+# Это делает все файлы в этом бакете доступными для чтения без авторизации
+echo "Setting public policy for bucket 'covers'..."
+mc policy set public myminio/covers
 
-# Configure MinIO client
-mc alias set myminio http://localhost:9000 "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}"
-
-# Create publications bucket
-echo "📦 Creating publications-bucket..."
-mc mb myminio/publications-bucket --ignore-existing
-
-# Set public read policy for publications bucket
-echo "🔓 Setting public read policy..."
-mc anonymous set public myminio/publications-bucket
-
-# Create private bucket for sensitive files (optional)
-echo "📦 Creating private-bucket..."
-mc mb myminio/private-bucket --ignore-existing
-mc anonymous set none myminio/private-bucket
-
-# Enable versioning (optional)
-echo "🔄 Enabling versioning..."
-mc version enable myminio/publications-bucket
-
-echo "✅ Buckets created successfully!"
-echo "📚 MinIO Console: http://localhost:9001"
-echo "📦 S3 Endpoint: http://localhost:9000"
+# Запускаем основной процесс контейнера (если он есть) или просто завершаем скрипт
+# Если этот контейнер только для инициализации, можно оставить так:
+echo "Initialization complete."
+exec "$@"
